@@ -79,8 +79,20 @@ if USING="$(lsof -nP -iTCP:"$PORT" -sTCP:LISTEN 2>/dev/null)" && [ -n "$USING" ]
 fi
 
 # 仮想環境 + Flask
-[ -d "$DEST/.venv" ] || uv venv "$DEST/.venv"
-uv pip install --python "$DEST/.venv/bin/python" flask
+# .venv があっても python が壊れている（リンク切れ・中断された作成など）ことがあるので、
+# ディレクトリの有無ではなく実際に実行できるかで判定し、ダメなら作り直す。
+PY="$DEST/.venv/bin/python"
+if ! "$PY" -c 'import sys' >/dev/null 2>&1; then
+  echo "仮想環境を作成します（python が実行できないため）"
+  rm -rf "$DEST/.venv"
+  uv venv "$DEST/.venv"
+fi
+uv pip install --python "$PY" flask
+if ! "$PY" -c 'import flask' >/dev/null 2>&1; then
+  echo "仮想環境で flask を import できません: $PY" >&2
+  ls -l "$PY" >&2 || true
+  exit 1
+fi
 
 # plist 生成 & 登録
 sed "s|__HOME__|$HOME|g" "$SRC/$LABEL.plist" > "$PLIST"
