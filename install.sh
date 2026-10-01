@@ -1,6 +1,7 @@
 #!/bin/bash
 # ~/.local/share/lite-server にインストールして launchd に登録する
 set -euo pipefail
+trap 'echo "install.sh: ${LINENO}行目で失敗しました (exit $?)" >&2' ERR
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
 DEST="$HOME/.local/share/lite-server"
@@ -14,7 +15,8 @@ cp "$SRC/app.py" "$SRC/start-flask.sh" "$DEST/"
 chmod +x "$DEST/start-flask.sh"
 cp -R "$SRC/templates" "$DEST/"
 mkdir -p "$DEST/static"
-cp -Rn "$SRC/static/." "$DEST/static/"
+# cp -n は新しいmacOS/GNU cpだと「スキップしたら exit 1」になり set -e で無言終了するので rsync を使う
+rsync -a --ignore-existing "$SRC/static/" "$DEST/static/"
 
 # 設定（初回のみ。ユーザー名・パスワードを対話入力。環境変数 LITE_USER / LITE_PASSWORD / LITE_PORT でも指定可）
 if [ ! -f "$DEST/config.env" ]; then
