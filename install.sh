@@ -45,19 +45,37 @@ fi
 # 旧バージョンの config.env にポート設定がなければ追記
 grep -q '^LITE_PORT=' "$DEST/config.env" || echo 'LITE_PORT=5000' >> "$DEST/config.env"
 
+# ポート確認。macOSは別プロセスが *:PORT をlistenしていても bind が成功することが
+# あるため（AirPlayレシーバー等が5000を使用）、bindではなく lsof で listen 状態を見る。
+# 再インストール時に自分自身を検出しないよう、先に旧サービスを止める。
+PORT="$(. "$DEST/config.env"; echo "$LITE_PORT")"
+case "$PORT" in
+  ''|*[!0-9]*) echo "LITE_PORT が不正です: '$PORT' ($DEST/config.env)" >&2; exit 1 ;;
+esac
+if [ "$PORT" -lt 1 ] || [ "$PORT" -gt 65535 ]; then
+  echo "LITE_PORT は 1-65535 で指定してください: $PORT" >&2; exit 1
+fi
+launchctl unload "$PLIST" 2>/dev/null || true
+if USING="$(lsof -nP -iTCP:"$PORT" -sTCP:LISTEN 2>/dev/null)" && [ -n "$USING" ]; then
+  echo "ポート $PORT は既に使用されています:" >&2
+  echo "$USING" >&2
+  echo "別のポートを使う場合は $DEST/config.env の LITE_PORT を編集して再実行してください。" >&2
+  echo "(macOSの場合、システム設定 > 一般 > AirDropとHandoff > AirPlayレシーバー が5000を使います)" >&2
+  exit 1
+fi
+
 # 仮想環境 + Flask
 [ -d "$DEST/.venv" ] || uv venv "$DEST/.venv"
 uv pip install --python "$DEST/.venv/bin/python" flask
 
 # plist 生成 & 登録
 sed "s|__HOME__|$HOME|g" "$SRC/$LABEL.plist" > "$PLIST"
-launchctl unload "$PLIST" 2>/dev/null || true
 launchctl load "$PLIST"
 
 # 起動確認（最大10秒待つ）
-PORT="$(. "$DEST/config.env"; echo "$LITE_PORT")"
 for _ in $(seq 20); do
-  if curl -s -o /dev/null "http://127.0.0.1:$PORT/login"; then
+  # 他プロセスの応答を拾わないよう 200 を確認する
+  if [ "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/login")" = "200" ]; then
     IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)"
     HOST="$(scutil --get LocalHostName 2>/dev/null || true)"
     echo "インストール完了: $DEST"
