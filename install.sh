@@ -50,5 +50,22 @@ sed "s|__HOME__|$HOME|g" "$SRC/$LABEL.plist" > "$PLIST"
 launchctl unload "$PLIST" 2>/dev/null || true
 launchctl load "$PLIST"
 
-echo "インストール完了: $DEST"
-echo "ログ: tail -f ~/Library/Logs/lite-server.log"
+# 起動確認（最大10秒待つ）
+PORT=5000
+for _ in $(seq 20); do
+  if curl -s -o /dev/null "http://127.0.0.1:$PORT/login"; then
+    IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)"
+    HOST="$(scutil --get LocalHostName 2>/dev/null || true)"
+    echo "インストール完了: $DEST"
+    echo "起動しました:"
+    echo "  http://localhost:$PORT"
+    [ -n "$IP" ] && echo "  http://$IP:$PORT"
+    [ -n "$HOST" ] && echo "  http://$HOST.local:$PORT"
+    echo "ログ: tail -f ~/Library/Logs/lite-server.log"
+    exit 0
+  fi
+  sleep 0.5
+done
+echo "起動を確認できませんでした。ログを確認してください:" >&2
+tail -n 20 "$HOME/Library/Logs/lite-server.log" >&2 || true
+exit 1
