@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 app = Flask(__name__)
+USER = os.environ["LITE_USER"]
 PASSWORD = os.environ["LITE_PASSWORD"]
 STATIC_DIR = Path(os.environ.get("LITE_STATIC_DIR", Path(__file__).parent / "static"))  # 静的ファイルディレクトリ
 sessions = {}  # {token: 有効期限}
@@ -12,14 +13,18 @@ sessions = {}  # {token: 有効期限}
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        user = request.form.get('username', '')
         pwd = request.form.get('password', '')
-        if pwd == PASSWORD:
+        # 両方評価してタイミング差を出さない
+        ok_user = secrets.compare_digest(user.encode(), USER.encode())
+        ok_pwd = secrets.compare_digest(pwd.encode(), PASSWORD.encode())
+        if ok_user and ok_pwd:
             token = secrets.token_hex(16)
             sessions[token] = datetime.now() + timedelta(days=7)
             response = redirect('/')
             response.set_cookie('session', token, max_age=7*24*3600)
             return response
-        return render_template('login.html', error="Wrong password"), 401
+        return render_template('login.html', error="Wrong username or password"), 401
     return render_template('login.html')
 
 def check_session():

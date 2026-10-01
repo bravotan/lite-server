@@ -6,11 +6,11 @@
 # uv が必要。~/.local/share/lite-server にインストールして launchd に登録
 ./install.sh
 
-# パスワード確認・変更（変更後は再起動）
+# ユーザー名・パスワードは初回に入力（保存先。変更後は再起動）
 cat ~/.local/share/lite-server/config.env
 
 # ログ確認
-tail -f ~/Library/Logs/flask-secret.log
+tail -f ~/Library/Logs/lite-server.log
 ```
 
 静的ファイルは `~/.local/share/lite-server/static/` に置く（再インストールしても上書きされない）。
@@ -18,7 +18,7 @@ tail -f ~/Library/Logs/flask-secret.log
 **停止・再起動：**
 
 ```bash
-launchctl stop org.resourcez.flask-secret    # KeepAlive なので即再起動される
+launchctl stop org.resourcez.lite-server    # KeepAlive なので即再起動される
 ./uninstall.sh                           # 登録解除
 ```
 

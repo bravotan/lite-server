@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>org.resourcez.flask-secret</string>
+    <string>org.resourcez.lite-server</string>
     
     <key>ProgramArguments</key>
     <array>
@@ -18,9 +18,9 @@
     <true/>
     
     <key>StandardOutPath</key>
-    <string>__HOME__/Library/Logs/flask-secret.log</string>
+    <string>__HOME__/Library/Logs/lite-server.log</string>
     
     <key>StandardErrorPath</key>
-    <string>__HOME__/Library/Logs/flask-secret-error.log</string>
+    <string>__HOME__/Library/Logs/lite-server-error.log</string>
 </dict>
 </plist>
