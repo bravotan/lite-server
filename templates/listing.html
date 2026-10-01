@@ -15,7 +15,7 @@
   <a href="/logout">Logout</a>
 </header>
 <table>
-  {% if parent %}<tr><td colspan="3"><a href="{{ parent }}">../</a></td></tr>{% endif %}
+  {% if parent %}<tr><td colspan="3"><a href="{{ parent|urlencode }}">../</a></td></tr>{% endif %}
   {% for e in entries %}
   <tr>
     <td><a href="/{{ e.path|urlencode }}">{{ e.name }}</a></td>
