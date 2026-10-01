@@ -1,0 +1,39 @@
+from flask import Flask, render_template, request, redirect, make_response
+import secrets
+from datetime import datetime, timedelta
+from pathlib import Path
+
+app = Flask(__name__)
+STATIC_DIR = Path.home() / "path/to/your/static"  # 静的ファイルディレクトリ
+PASSWORD = "your-secret-password"
+sessions = {}  # {token: 有効期限}
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        pwd = request.form.get('password', '')
+        if pwd == PASSWORD:
+            token = secrets.token_hex(16)
+            sessions[token] = datetime.now() + timedelta(days=7)
+            response = redirect('/')
+            response.set_cookie('session', token, max_age=7*24*3600)
+            return response
+        return render_template('login.html', error="Wrong password"), 401
+    return render_template('login.html')
+
+def check_session():
+    token = request.cookies.get('session')
+    if token and token in sessions:
+        if sessions[token] > datetime.now():
+            return True
+    return False
+
+@app.route('/')
+def index():
+    if not check_session():
+        return redirect('/login')
+    # 静的ファイル一覧とか、直接ファイル提供
+    return app.send_static_file('index.html')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=False)
