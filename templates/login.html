@@ -1,0 +1,9 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login</title>
+<form method="post" style="max-width:20rem;margin:20vh auto;font-family:sans-serif">
+  <input type="password" name="password" autofocus placeholder="Password" style="width:100%;padding:.6rem;font-size:1rem">
+  <button style="width:100%;margin-top:.5rem;padding:.6rem;font-size:1rem">Login</button>
+  {% if error %}<p style="color:#c00">{{ error }}</p>{% endif %}
+</form>

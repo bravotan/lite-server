@@ -3,24 +3,23 @@
 **セットアップ：**
 
 ```bash
-# 1. Flask + セッション周りをinstall（uv使用）
-uv pip install flask
+# uv が必要。~/.local/share/lite-server にインストールして launchd に登録
+./install.sh
 
-# 2. plistを登録
-launchctl load ~/Library/LaunchAgents/com.local.flask-secret.plist
+# パスワード確認・変更（変更後は再起動）
+cat ~/.local/share/lite-server/config.env
 
-# 3. 起動確認
-launchctl start com.local.flask-secret
-
-# 4. ログ確認
+# ログ確認
 tail -f ~/Library/Logs/flask-secret.log
 ```
+
+静的ファイルは `~/.local/share/lite-server/static/` に置く（再インストールしても上書きされない）。
 
 **停止・再起動：**
 
 ```bash
-launchctl stop com.local.flask-secret
-launchctl unload ~/Library/LaunchAgents/com.local.flask-secret.plist
+launchctl stop com.local.flask-secret    # KeepAlive なので即再起動される
+./uninstall.sh                           # 登録解除
 ```
 
 ---

@@ -1,11 +1,12 @@
-from flask import Flask, render_template, request, redirect, make_response
+from flask import Flask, render_template, request, redirect, make_response, send_from_directory
+import os
 import secrets
 from datetime import datetime, timedelta
 from pathlib import Path
 
 app = Flask(__name__)
-STATIC_DIR = Path.home() / "path/to/your/static"  # 静的ファイルディレクトリ
-PASSWORD = "your-secret-password"
+PASSWORD = os.environ["LITE_PASSWORD"]
+STATIC_DIR = Path(os.environ.get("LITE_STATIC_DIR", Path(__file__).parent / "static"))  # 静的ファイルディレクトリ
 sessions = {}  # {token: 有効期限}
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -33,7 +34,7 @@ def index():
     if not check_session():
         return redirect('/login')
     # 静的ファイル一覧とか、直接ファイル提供
-    return app.send_static_file('index.html')
+    return send_from_directory(STATIC_DIR, "index.html")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
