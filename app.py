@@ -34,6 +34,14 @@ def check_session():
             return True
     return False
 
+@app.route('/logout')
+def logout():
+    # サーバ側のセッションも破棄してからCookieを削除
+    sessions.pop(request.cookies.get('session'), None)
+    response = redirect('/login')
+    response.delete_cookie('session')
+    return response
+
 @app.route('/')
 def index():
     if not check_session():
