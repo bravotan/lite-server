@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Index of {{ path }}</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { text-align: left; padding: .4rem .5rem; border-bottom: 1px solid #8884; }
+  td.num { text-align: right; white-space: nowrap; color: #888; }
+  a { text-decoration: none; }
+  header { display: flex; justify-content: space-between; align-items: baseline; }
+</style>
+<header>
+  <h1>Index of {{ path }}</h1>
+  <a href="/logout">Logout</a>
+</header>
+<table>
+  {% if parent %}<tr><td colspan="3"><a href="{{ parent|urlencode }}">../</a></td></tr>{% endif %}
+  {% for e in entries %}
+  <tr>
+    <td><a href="/{{ e.path|urlencode }}">{{ e.name }}</a></td>
+    <td class="num">{{ e.size|filesizeformat if e.size is not none else '-' }}</td>
+    <td class="num">{{ e.mtime.strftime('%Y-%m-%d %H:%M') }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="3">(empty)</td></tr>
+  {% endfor %}
+</table>

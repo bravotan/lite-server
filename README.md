@@ -13,7 +13,7 @@ cat ~/.local/share/lite-server/config.env
 tail -f ~/Library/Logs/lite-server.log
 ```
 
-静的ファイルは `~/.local/share/lite-server/static/` に置く（再インストールしても上書きされない）。
+静的ファイルは `~/.local/share/lite-server/static/` に置く（再インストールしても上書きされない）。ログイン後、`/` や各ディレクトリにアクセスするとファイル一覧を自動生成する（`.` で始まるファイルと、static外を指すシンボリックリンクは非表示）。
 
 **停止・再起動：**
 
