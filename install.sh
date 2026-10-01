@@ -55,7 +55,21 @@ esac
 if [ "$PORT" -lt 1 ] || [ "$PORT" -gt 65535 ]; then
   echo "LITE_PORT は 1-65535 で指定してください: $PORT" >&2; exit 1
 fi
-launchctl unload "$PLIST" 2>/dev/null || true
+# 旧ラベルの残骸も含めて停止する。plist が無くても label 指定の remove なら止まる。
+# unload は SIGTERM 送信後すぐ戻るので、ポートが解放されるまで最大10秒待つ。
+LEGACY_LABELS="com.local.flask-secret org.resourcez.flask-secret"
+for L in $LABEL $LEGACY_LABELS; do
+  if launchctl list "$L" >/dev/null 2>&1; then
+    echo "サービス停止: $L"
+    launchctl unload "$HOME/Library/LaunchAgents/$L.plist" 2>/dev/null || true
+    launchctl remove "$L" 2>/dev/null || true
+  fi
+done
+for L in $LEGACY_LABELS; do rm -f "$HOME/Library/LaunchAgents/$L.plist"; done
+for _ in $(seq 20); do
+  [ -z "$(lsof -nP -iTCP:"$PORT" -sTCP:LISTEN 2>/dev/null)" ] && break
+  sleep 0.5
+done
 if USING="$(lsof -nP -iTCP:"$PORT" -sTCP:LISTEN 2>/dev/null)" && [ -n "$USING" ]; then
   echo "ポート $PORT は既に使用されています:" >&2
   echo "$USING" >&2
