@@ -18,7 +18,7 @@ tail -f ~/Library/Logs/flask-secret.log
 **停止・再起動：**
 
 ```bash
-launchctl stop com.local.flask-secret    # KeepAlive なので即再起動される
+launchctl stop org.resourcez.flask-secret    # KeepAlive なので即再起動される
 ./uninstall.sh                           # 登録解除
 ```
 

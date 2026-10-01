@@ -4,7 +4,7 @@ set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
 DEST="$HOME/.local/share/lite-server"
-LABEL="com.local.flask-secret"
+LABEL="org.resourcez.flask-secret"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 
 mkdir -p "$DEST" "$HOME/Library/Logs" "$HOME/Library/LaunchAgents"
