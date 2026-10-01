@@ -90,7 +90,9 @@ fi
 uv pip install --python "$PY" flask
 if ! "$PY" -c 'import flask' >/dev/null 2>&1; then
   echo "仮想環境で flask を import できません: $PY" >&2
-  ls -l "$PY" >&2 || true
+  echo "--- uv: $(command -v uv) ($(uv --version 2>&1))" >&2
+  ls -la "$DEST/.venv" "$DEST/.venv/bin" >&2 || true
+  cat "$DEST/.venv/pyvenv.cfg" >&2 || true
   exit 1
 fi
 
