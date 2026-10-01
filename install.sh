@@ -16,7 +16,7 @@ cp -R "$SRC/templates" "$DEST/"
 mkdir -p "$DEST/static"
 cp -Rn "$SRC/static/." "$DEST/static/"
 
-# 設定（初回のみ。ユーザー名・パスワードを対話入力。環境変数 LITE_USER / LITE_PASSWORD でも指定可）
+# 設定（初回のみ。ユーザー名・パスワードを対話入力。環境変数 LITE_USER / LITE_PASSWORD / LITE_PORT でも指定可）
 if [ ! -f "$DEST/config.env" ]; then
   USER_NAME="${LITE_USER:-}"
   PASS="${LITE_PASSWORD:-}"
@@ -37,9 +37,13 @@ if [ ! -f "$DEST/config.env" ]; then
     printf 'LITE_USER=%q\n' "$USER_NAME"
     printf 'LITE_PASSWORD=%q\n' "$PASS"
     printf 'LITE_STATIC_DIR=%q\n' "$DEST/static"
+    printf 'LITE_PORT=%q\n' "${LITE_PORT:-5000}"
   } > "$DEST/config.env"
   echo "設定を保存しました: $DEST/config.env"
 fi
+
+# 旧バージョンの config.env にポート設定がなければ追記
+grep -q '^LITE_PORT=' "$DEST/config.env" || echo 'LITE_PORT=5000' >> "$DEST/config.env"
 
 # 仮想環境 + Flask
 [ -d "$DEST/.venv" ] || uv venv "$DEST/.venv"
@@ -51,7 +55,7 @@ launchctl unload "$PLIST" 2>/dev/null || true
 launchctl load "$PLIST"
 
 # 起動確認（最大10秒待つ）
-PORT=5000
+PORT="$(. "$DEST/config.env"; echo "$LITE_PORT")"
 for _ in $(seq 20); do
   if curl -s -o /dev/null "http://127.0.0.1:$PORT/login"; then
     IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)"
